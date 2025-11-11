@@ -6,6 +6,7 @@ import (
 	"github.com/giang19062001/gin-golang-standard/internal/config"
 	"github.com/giang19062001/gin-golang-standard/internal/database"
 	"github.com/giang19062001/gin-golang-standard/internal/router"
+	"github.com/giang19062001/gin-golang-standard/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,8 +24,12 @@ func main() {
 
 	// Public folder /uploads để có thể đọc ảnh
 	r.Static("/uploads", "./uploads")
-	// Tạo router
 
+	// khởi tạo logger
+	logger.Init()
+	defer logger.Sync()
+
+	// Tạo router
 	router.SetupRouter(r, cfg, db)
 
 	log.Printf("Server running on :%s", cfg.Port)

@@ -3,13 +3,13 @@ package services
 import (
 	"errors"
 	"fmt"
-	"log"
 	"mime/multipart"
 
 	"github.com/giang19062001/gin-golang-standard/internal/dto"
 	"github.com/giang19062001/gin-golang-standard/internal/models"
 	"github.com/giang19062001/gin-golang-standard/internal/repositories"
 	"github.com/giang19062001/gin-golang-standard/internal/utils"
+	"github.com/giang19062001/gin-golang-standard/pkg/logger"
 )
 
 type userService struct {
@@ -31,9 +31,11 @@ func NewUserService(repo repositories.IUserRepository, jwtSecret string) IUserSe
 }
 
 func (ser *userService) LoginUser(loginDto *dto.LoginInDto) (string, error) {
+	logr := logger.With("userService")
 	// kiểm tra user
 	existingUser, err := ser.repo.GetByEmail(loginDto.Email)
 	if existingUser == nil {
+		logr.Error("user ko tồn tại")
 		return "", errors.New("user ko tồn tại")
 	}
 	if err != nil {
@@ -43,6 +45,7 @@ func (ser *userService) LoginUser(loginDto *dto.LoginInDto) (string, error) {
 	// kiểm tra mật khẩu
 	err = utils.ComparePassword(existingUser.Password, loginDto.Password)
 	if err != nil {
+		logr.Error("user ko tồn tại")
 		return "", errors.New("sai mật khẩu")
 	}
 
@@ -52,14 +55,17 @@ func (ser *userService) LoginUser(loginDto *dto.LoginInDto) (string, error) {
 		return "", err
 	}
 
+	logr.Infow("Đăng nhập thành công")
 	return tokenStr, nil
 
 }
 
 func (ser *userService) RegisterUser(userDto *dto.RegisterDto) (*models.User, error) {
+	logr := logger.With("userService")
 
 	existingUser, _ := ser.repo.GetByEmail(userDto.Email)
 	if existingUser != nil {
+		logr.Error("email này đã được user khác sử dụng - không thể đăng ký")
 		return nil, errors.New("email này đã được user khác sử dụng - không thể đăng ký")
 	}
 
@@ -93,8 +99,11 @@ func (ser *userService) GetAllUser() ([]models.User, error) {
 }
 
 func (ser *userService) Get(id int) (*models.User, error) {
+	logr := logger.With("userService")
+
 	user, _ := ser.repo.Get(id)
 	if user == nil {
+		logr.Error("user không tồn tại")
 		return nil, errors.New("user không tồn tại")
 	}
 	return user, nil
@@ -109,10 +118,12 @@ func (ser *userService) GetUserOfEvent(eventId int) ([]models.User, error) {
 }
 
 func (ser *userService) UpdateAvatar(file multipart.File, header *multipart.FileHeader, userId int) (string, error) {
+	logr := logger.With("userService")
+
 	// kiểm tra user
 	user, _ := ser.repo.Get(userId)
-	log.Print(userId)
 	if user == nil {
+		logr.Error("user không tồn tại")
 		return "", errors.New("user không tồn tại")
 	}
 

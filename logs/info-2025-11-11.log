@@ -1,0 +1,2 @@
+{"level":"ERROR","timestamp":"2025-11-11T17:13:00.394+0700","msg":"user ko tồn tại","service":"userService","func":"LoginUser"}
+{"level":"INFO","timestamp":"2025-11-11T17:13:07.475+0700","msg":"Đăng nhập thành công","service":"userService","func":"LoginUser"}
