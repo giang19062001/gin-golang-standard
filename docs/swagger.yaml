@@ -1,0 +1,486 @@
+basePath: /api/v1
+definitions:
+  dto.CreateAttendeeDto:
+    properties:
+      eventId:
+        type: integer
+      userId:
+        type: integer
+    required:
+    - eventId
+    - userId
+    type: object
+  dto.CreateEventDto:
+    properties:
+      date:
+        type: string
+      description:
+        minLength: 10
+        type: string
+      location:
+        minLength: 3
+        type: string
+      name:
+        minLength: 3
+        type: string
+      ownerId:
+        type: integer
+    required:
+    - date
+    - description
+    - location
+    - name
+    - ownerId
+    type: object
+  dto.DataResponse:
+    properties:
+      data: {}
+    type: object
+  dto.LoginInDto:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.RegisterDto:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 3
+        type: string
+      password:
+        minLength: 3
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.TokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  dto.UpdateEventDto:
+    properties:
+      date:
+        type: string
+      description:
+        minLength: 10
+        type: string
+      location:
+        minLength: 3
+        type: string
+      name:
+        minLength: 3
+        type: string
+    required:
+    - date
+    - description
+    - location
+    - name
+    type: object
+  models.Attendee:
+    properties:
+      eventId:
+        type: integer
+      id:
+        type: integer
+      userId:
+        type: integer
+    type: object
+  models.Event:
+    properties:
+      date:
+        description: YYYY-MM-DD
+        type: string
+      description:
+        minLength: 10
+        type: string
+      id:
+        type: integer
+      location:
+        minLength: 3
+        type: string
+      name:
+        minLength: 3
+        type: string
+      ownerId:
+        type: integer
+    required:
+    - date
+    - description
+    - location
+    - name
+    - ownerId
+    type: object
+  models.User:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is the Swagger documentation for the Gin-Golang project.
+  title: Gin-Golang API
+  version: "2.0"
+paths:
+  /attendees/{eventId}/{userId}:
+    delete:
+      description: Xóa dự liệu tham dự sự kiện của người tham dự
+      parameters:
+      - description: Id của event
+        in: path
+        name: eventId
+        required: true
+        type: integer
+      - description: Id của user
+        in: path
+        name: userId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      summary: Xóa dự liệu tham dự sự kiện
+      tags:
+      - Attendees
+  /attendees/events/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Lấy danh sách tất cả sự kiện đã tham gia của người tham dự này
+      parameters:
+      - description: Id của user
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Event'
+            type: array
+      summary: Trả toạn bộ sự kiện mà người tham dự đã tham gia
+      tags:
+      - Attendees
+  /attendees/register:
+    post:
+      consumes:
+      - application/json
+      description: Chèn dữ liệu tham dự của người dùng với sự kiện
+      parameters:
+      - description: Thông tin đăng ký tham dự
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAttendeeDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Attendee'
+      summary: Đăng kí tham dự sự kiên
+      tags:
+      - Attendees
+  /attendees/users/{eventId}:
+    get:
+      consumes:
+      - application/json
+      description: Lấy danh sách tất cả người tham dự sự kiện này
+      parameters:
+      - description: Id của event
+        in: path
+        name: eventId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      summary: Trả toàn bộ người tham dự sự kiện
+      tags:
+      - Attendees
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Đăng nhập tài khoản người dùng mới với email, mật khẩu
+      parameters:
+      - description: Thông tin người dùng
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginInDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.TokenResponse'
+      summary: Đăng nhập
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Tạo tài khoản người dùng mới với email, mật khẩu và tên
+      parameters:
+      - description: Thông tin người dùng
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Người dùng được tạo thành công
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Đăng ký người dùng mới
+      tags:
+      - Auth
+  /events:
+    get:
+      consumes:
+      - application/json
+      description: Lấy danh sách tất cả events
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Event'
+            type: array
+      summary: Trả toàn bộ events
+      tags:
+      - Events
+    post:
+      consumes:
+      - application/json
+      description: Thêm event mới vào database
+      parameters:
+      - description: Thông tin event vừa thêm
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateEventDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Event'
+      summary: Tạo event mới
+      tags:
+      - Events
+  /events/{id}:
+    delete:
+      description: Xóa event theo Id
+      parameters:
+      - description: Id của event
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+      summary: Xóa event
+      tags:
+      - Events
+    get:
+      consumes:
+      - application/json
+      description: Trích xuất event cụ thể bằng ID
+      parameters:
+      - description: Id của event
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Event'
+      summary: Lấy event theo ID
+      tags:
+      - Events
+    put:
+      consumes:
+      - application/json
+      description: Cập nhập event đã tồn tại bằng ID
+      parameters:
+      - description: Id của event
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dữ liệu event sau cập nhập
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateEventDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Event'
+      summary: Cập nhập event
+      tags:
+      - Events
+  /events/images:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload mỗi file <= 10MB. Nếu có 1 file sai định dạng → KHÔNG LƯU
+        BẤT KÌ FILE NÀO
+      parameters:
+      - description: ID của event
+        in: formData
+        name: eventId
+        required: true
+        type: integer
+      - description: Danh sách file ảnh
+        in: formData
+        name: files
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.DataResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      summary: Upload ảnh cho event **MULTIPLE FILE**
+      tags:
+      - Events
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Lấy danh sách tất cả users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      summary: Trả toàn bộ users
+      tags:
+      - Users
+  /users/avatar:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Upload file avatar (image) cho user - max 10MB
+      parameters:
+      - description: ID của user
+        in: formData
+        name: userId
+        required: true
+        type: integer
+      - description: File avatar để upload
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.DataResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      summary: Upload avatar **FILE**
+      tags:
+      - Users
+  /users/profile:
+    get:
+      consumes:
+      - application/json
+      description: Lấy thông tin user đang đăng nhập
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Trả thông tin user đang đăng nhập  **Yêu cầu xác thực**
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

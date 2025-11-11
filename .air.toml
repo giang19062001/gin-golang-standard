@@ -1,0 +1,131 @@
+# -----------------------------------------------
+# Cấu hình cơ bản cho Air (Hot Reload cho Go)
+# -----------------------------------------------
+
+# Thư mục gốc của project
+root = "."
+
+# Thư mục chứa dữ liệu test (nếu có)
+testdata_dir = "testdata"
+
+# Thư mục tạm chứa binary build ra
+tmp_dir = "tmp"
+
+# -----------------------------------------------
+# ⚙️ Cấu hình build & run ứng dụng
+# -----------------------------------------------
+[build]
+# Các tham số truyền cho file binary khi chạy (thường để trống)
+args_bin = []
+
+# File binary được build ra — ⚠️ cần .exe trên Windows
+bin = "./tmp/main.exe"
+
+# Lệnh build Go app — build file ( khai báo nơi sẽ lưu file build và nơi chứa file chính của toàn hệ thống) — ⚠️ cần .exe trên Windows
+cmd = "go build -o ./tmp/main.exe ./cmd/api"
+
+# Thời gian delay (ms) sau khi phát hiện thay đổi, trước khi rebuild
+delay = 1000
+
+# Các thư mục không cần theo dõi (để tránh rebuild không cần thiết)
+exclude_dir = ["assets", "tmp", "vendor", "testdata"]
+
+# File cụ thể cần loại trừ (nếu có)
+exclude_file = []
+
+# Regex loại trừ các file phù hợp (ở đây bỏ qua file test)
+exclude_regex = ["_test.go"]
+
+# Nếu true → không rebuild khi file không đổi nội dung
+excldue_unchanged = false
+
+# Theo dõi symbolic link (thường để false)
+follow_symlink = false
+
+# Đường dẫn binary đầy đủ (ít khi dùng)
+full_bin = ""
+
+# Danh sách thư mục cụ thể cần theo dõi (nếu để trống → Air sẽ tự tìm)
+include_dir = []
+
+# Phần mở rộng của file cần theo dõi (thay đổi → rebuild)
+include_ext = ["go", "tpl", "tmpl", "html"]
+
+# File cụ thể cần include (nếu có)
+include_file = []
+
+# Thời gian chờ trước khi kill process cũ khi rebuild
+kill_delay = "0s"
+
+# Ghi log lỗi build vào file
+log = "build-errors.log"
+
+# Bật chế độ polling (dành cho hệ thống không hỗ trợ notify, hiếm khi dùng)
+poll = false
+
+# Chu kỳ polling (ms) nếu poll = true
+poll_interval = 0
+
+# Lệnh chạy sau khi build xong (ví dụ: migrate DB, copy file,...)
+post_cmd = []
+
+# Lệnh chạy trước khi build (ví dụ: lint, gen code,...)
+pre_cmd = []
+
+# Nếu true → chạy lại binary mà không rebuild
+rerun = false
+
+# Delay (ms) trước khi rerun nếu rerun = true
+rerun_delay = 500
+
+# Gửi tín hiệu interrupt (SIGINT) thay vì kill process (hữu ích cho graceful shutdown)
+send_interrupt = false
+
+# Nếu true → dừng Air khi build lỗi (thường để false để vẫn watch)
+stop_on_error = false
+
+
+# -----------------------------------------------
+# Cấu hình màu hiển thị trong terminal
+# -----------------------------------------------
+[color]
+app = ""             # Màu log của ứng dụng (mặc định)
+build = "yellow"     # Màu log khi đang build
+main = "magenta"     # Màu log của Air
+runner = "green"    #  màu khi chạy binary
+watcher = "cyan"     # Màu log khi watch file
+
+# Gợi ý: có thể đổi "runnder" → "runner" để chuẩn hơn (Air vẫn hiểu)
+
+
+# -----------------------------------------------
+# Cấu hình log
+# -----------------------------------------------
+[log]
+main_only = false    # false = hiển thị cả log của app và Air
+silent = false       # true = tắt toàn bộ log (ít khi cần)
+time = false         # true = thêm timestamp trước mỗi log
+
+
+# -----------------------------------------------
+# Tùy chọn khác
+# -----------------------------------------------
+[misc]
+clean_on_exit = false  # true = xóa file binary khi thoát Air
+
+
+# -----------------------------------------------
+#  Cấu hình proxy (nếu cần redirect port)
+# -----------------------------------------------
+[proxy]
+enabled = false        # bật proxy mode
+app_port = 0           # cổng của app (nếu proxy dùng)
+proxy_port = 0         # cổng mà Air proxy đến app
+
+
+# -----------------------------------------------
+# Cấu hình màn hình terminal khi reload
+# -----------------------------------------------
+[screen]
+clear_on_rebuild = false  # true = xóa sạch màn hình trước mỗi rebuild
+keep_scroll = true        # true = giữ scroll log cũ
