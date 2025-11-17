@@ -6,6 +6,7 @@ import (
 	"github.com/giang19062001/gin-golang-standard/internal/dto"
 	"github.com/giang19062001/gin-golang-standard/internal/models"
 	"github.com/giang19062001/gin-golang-standard/internal/repositories"
+	"github.com/giang19062001/gin-golang-standard/pkg/logger"
 )
 
 type attendeeService struct {
@@ -27,6 +28,8 @@ func NewAttendeeService(repo repositories.IAttendeeRepository, userService IUser
 }
 
 func (ser *attendeeService) RegisterAttendee(dto *dto.CreateAttendeeDto) (*models.Attendee, error) {
+	logr := logger.With("attendeeService")
+
 	// kiểm tra event
 	event, err := ser.eventService.GetEvent(dto.EventId)
 	if err != nil {
@@ -63,8 +66,10 @@ func (ser *attendeeService) RegisterAttendee(dto *dto.CreateAttendeeDto) (*model
 	if id == 0 {
 		return nil, errors.New("lỗi khi thêm dữ liệu mới")
 	}
-	// gửi email
-	// ser.emailService.SendEmailHandler(user.Email)
+	// gửi sự kiện cho serivce khac -> service đó đãm nhiệm trọng trách gửi email
+	logr.Info("Email : ", user)
+
+	ser.emailService.SendEmailHandler(user.Email, user.Name)
 
 	// trả về thông tin đăng ký event
 	attende := &models.Attendee{

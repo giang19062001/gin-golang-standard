@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Port      string `mapstructure:"PORT"`
 	DbUrl     string `mapstructure:"DB_URL"`
+	RabbitUrl string `mapstructure:"RABBITMQ_URL"`
 	JwtSecret string `mapstructure:"JWT_SECRET"`
 }
 

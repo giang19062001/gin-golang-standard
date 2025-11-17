@@ -1,5 +1,11 @@
+# cài air nếu chưa có
+go install github.com/air-verse/air@latest
+
 # tạo ra file cấu hình hot reload
 air init 
+
+# chạy go lang với hot reload
+air 
 
 # cài swagger CLI nếu chưa có
 go install github.com/swaggo/swag/cmd/swag@latest

@@ -55,7 +55,7 @@ func (ser *userService) LoginUser(loginDto *dto.LoginInDto) (string, error) {
 		return "", err
 	}
 
-	logr.Infow("Đăng nhập thành công")
+	logr.Info("Đăng nhập thành công")
 	return tokenStr, nil
 
 }

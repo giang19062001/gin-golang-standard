@@ -2,7 +2,6 @@ package router
 
 import (
 	"database/sql"
-	"log"
 
 	_ "github.com/giang19062001/gin-golang-standard/docs"
 	"github.com/giang19062001/gin-golang-standard/internal/config"
@@ -10,6 +9,7 @@ import (
 	middlewares "github.com/giang19062001/gin-golang-standard/internal/middleware"
 	"github.com/giang19062001/gin-golang-standard/internal/repositories"
 	"github.com/giang19062001/gin-golang-standard/internal/services"
+	rabbitmq "github.com/giang19062001/gin-golang-standard/pkg/rabbit"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -19,17 +19,13 @@ import (
 // 1. REPOSITORY, SERVERICE TRẢ VỀ INTERFACE
 // 2. CONTROLLER TRẢ VỀ STRUCT
 
-func SetupRouter(g *gin.Engine, cfg *config.Config, db *sql.DB) {
+func SetupRouter(g *gin.Engine, cfg *config.Config, db *sql.DB, mq *rabbitmq.MqService) {
 
 	// SWAGGER
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	//email - rabbitmq
-	emailService, err := services.NewEmailService()
-	if err != nil {
-		log.Fatal("không thể bật rabbitmq", err)
-	}
-	defer emailService.Close()
+	emailService := services.NewEmailService(mq)
 
 	// user
 	userRepo := repositories.NewUserRepository(db)

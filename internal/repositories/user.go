@@ -126,12 +126,12 @@ func (repo *userRepository) GetUserOfEvent(eventId int) ([]models.User, error) {
 }
 
 func (repo *userRepository) Get(id int) (*models.User, error) {
-	query := "SELECT  id, name, email, password, avatar FROM users WHERE id = ?"
+	query := "SELECT  id, email, name, password, avatar FROM users WHERE id = ?"
 	return repo.getCommon(query, id)
 }
 
 func (repo *userRepository) GetByEmail(email string) (*models.User, error) {
-	query := "SELECT  id, name, email, password, avatar FROM users WHERE email = ?"
+	query := "SELECT  id, email, name, password, avatar FROM users WHERE email = ?"
 	return repo.getCommon(query, email)
 }
 
