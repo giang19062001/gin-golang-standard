@@ -12,6 +12,7 @@ type attendeeService struct {
 	repo         repositories.IAttendeeRepository
 	userService  IUserService
 	eventService IEventService
+	emailService IEmailService
 }
 
 type IAttendeeService interface {
@@ -21,8 +22,8 @@ type IAttendeeService interface {
 	GetUsersByEvent(int) ([]models.User, error)
 }
 
-func NewAttendeeService(repo repositories.IAttendeeRepository, userService IUserService, eventService IEventService) IAttendeeService {
-	return &attendeeService{repo: repo, userService: userService, eventService: eventService}
+func NewAttendeeService(repo repositories.IAttendeeRepository, userService IUserService, eventService IEventService, emailService IEmailService) IAttendeeService {
+	return &attendeeService{repo: repo, userService: userService, eventService: eventService, emailService: emailService}
 }
 
 func (ser *attendeeService) RegisterAttendee(dto *dto.CreateAttendeeDto) (*models.Attendee, error) {
@@ -34,8 +35,10 @@ func (ser *attendeeService) RegisterAttendee(dto *dto.CreateAttendeeDto) (*model
 	if event == nil {
 		return nil, errors.New("event không tồn tại")
 	}
+
 	// kiểm tra user
 	user, err := ser.userService.Get(dto.UserId)
+
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +63,10 @@ func (ser *attendeeService) RegisterAttendee(dto *dto.CreateAttendeeDto) (*model
 	if id == 0 {
 		return nil, errors.New("lỗi khi thêm dữ liệu mới")
 	}
+	// gửi email
+	// ser.emailService.SendEmailHandler(user.Email)
+
+	// trả về thông tin đăng ký event
 	attende := &models.Attendee{
 		Id:      id,
 		UserId:  dto.UserId,

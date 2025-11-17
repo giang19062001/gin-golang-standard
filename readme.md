@@ -20,3 +20,9 @@ migrate create -ext sql -dir ./cmd/migrate/migrations -seq create_users_table
 go run cmd/migrate/main.go up
  or
 go run cmd/migrate/main.go down
+
+# khởi tạo rabbimq
+docker-compose up -d
+
+# tắt rabbimq
+docker-compose down -v

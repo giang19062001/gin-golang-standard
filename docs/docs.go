@@ -698,6 +698,13 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 10
                 },
+                "eventImgs": {
+                    "description": "* Khi EventImgs == nil hoặc len(EventImgs) == 0, thì JSON sẽ bỏ qua field này",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.EventImg"
+                    }
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -710,6 +717,24 @@ const docTemplate = `{
                     "minLength": 3
                 },
                 "ownerId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.EventImg": {
+            "type": "object",
+            "required": [
+                "eventId",
+                "filepath"
+            ],
+            "properties": {
+                "eventId": {
+                    "type": "integer"
+                },
+                "filepath": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "integer"
                 }
             }

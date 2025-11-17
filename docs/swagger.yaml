@@ -108,6 +108,12 @@ definitions:
       description:
         minLength: 10
         type: string
+      eventImgs:
+        description: '* Khi EventImgs == nil hoặc len(EventImgs) == 0, thì JSON sẽ
+          bỏ qua field này'
+        items:
+          $ref: '#/definitions/models.EventImg'
+        type: array
       id:
         type: integer
       location:
@@ -124,6 +130,18 @@ definitions:
     - location
     - name
     - ownerId
+    type: object
+  models.EventImg:
+    properties:
+      eventId:
+        type: integer
+      filepath:
+        type: string
+      id:
+        type: integer
+    required:
+    - eventId
+    - filepath
     type: object
   models.User:
     properties:

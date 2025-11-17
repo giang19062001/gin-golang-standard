@@ -2,6 +2,7 @@ package router
 
 import (
 	"database/sql"
+	"log"
 
 	_ "github.com/giang19062001/gin-golang-standard/docs"
 	"github.com/giang19062001/gin-golang-standard/internal/config"
@@ -23,6 +24,13 @@ func SetupRouter(g *gin.Engine, cfg *config.Config, db *sql.DB) {
 	// SWAGGER
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	//email - rabbitmq
+	emailService, err := services.NewEmailService()
+	if err != nil {
+		log.Fatal("không thể bật rabbitmq", err)
+	}
+	defer emailService.Close()
+
 	// user
 	userRepo := repositories.NewUserRepository(db)
 	userService := services.NewUserService(userRepo, cfg.JwtSecret)
@@ -35,7 +43,7 @@ func SetupRouter(g *gin.Engine, cfg *config.Config, db *sql.DB) {
 
 	// attendee
 	attendeeRepo := repositories.NewAttendeRepository(db)
-	attendeeService := services.NewAttendeeService(attendeeRepo, userService, eventService)
+	attendeeService := services.NewAttendeeService(attendeeRepo, userService, eventService, emailService)
 	attendeeController := controllers.NewAttendeeController(attendeeService)
 
 	v1 := g.Group("/api/v1")
