@@ -1,13 +1,16 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/giang19062001/gin-golang-standard/internal/dto"
 	"github.com/giang19062001/gin-golang-standard/internal/services"
 	"github.com/giang19062001/gin-golang-standard/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/xuri/excelize/v2"
 )
 
 type UserController struct {
@@ -91,6 +94,102 @@ func (ctl *UserController) GetAllUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, users)
+}
+
+// @Summary Xuất toàn bộ users ra file Excel
+// @Description Lấy danh sách tất cả users từ database và trả về file Excel
+// @Tags Users
+// @Produce application/octet-stream
+// @Success 200 {file} file.xlsx
+// @Router /users/export [get]
+func (ctl *UserController) ExportUsersExcel(c *gin.Context) {
+	users, err := ctl.service.GetAllUser()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	// tạo file excel với users data
+	f, err := ctl.service.ExportUsersExcel(users)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// lấy ngày hôm nay với định dạng YYYY-MM-DD
+	currentDate := time.Now().Format("2006-01-02")
+	filename := fmt.Sprintf("users-%s.xlsx", currentDate)
+
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+	c.Header("Content-Transfer-Encoding", "binary")
+
+	// ghi file excel ra response
+	if err := f.Write(c.Writer); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Không thể ghi file Excel: " + err.Error()})
+		return
+	}
+}
+
+// @Summary Import users từ file Excel
+// @Description Nhận file Excel, đọc danh sách users và thêm vào database
+// @Tags Users
+// @Accept multipart/form-data
+// @Produce json
+// @Param file formData file true "File Excel chứa danh sách users"
+// @Success 200 {string} string "Import thành công"
+// @Router /users/import [post]
+func (ctl *UserController) ImportUsersExcel(c *gin.Context) {
+	// Lấy file upload từ form-data
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Không có file upload"})
+		return
+	}
+
+	// Mở file
+	f, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Không thể mở file: " + err.Error()})
+		return
+	}
+	defer f.Close()
+
+	// Đọc Excel bằng excelize
+	excelFile, err := excelize.OpenReader(f)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Không thể đọc file Excel: " + err.Error()})
+		return
+	}
+
+	// Lấy tất cả hàng trong sheet "Users"
+	rows, err := excelFile.GetRows("Users")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Không thể đọc sheet Users: " + err.Error()})
+		return
+	}
+
+	if len(rows) == 0 || len(rows) == 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File Excel rỗng"})
+		return
+	}
+
+	// Kiểm tra header bắt buộc
+	header := rows[0]
+	if len(header) < 3 || header[0] != "Name" || header[1] != "Email" || header[2] != "Password" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File Excel bắt buộc phải có cột header theo thứ tự từ trái sang phải là Name, Email, Password"})
+		return
+	}
+
+	// gọi hàm xử lý dữ liệu import và thêm vào database
+	err = ctl.service.ImportUsersExcel(rows)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Import users thành công"})
 }
 
 // @Summary Trả thông tin user đang đăng nhập  **Yêu cầu xác thực**

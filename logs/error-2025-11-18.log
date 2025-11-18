@@ -1,0 +1,5 @@
+{"level":"ERROR","timestamp":"2025-11-18T11:20:15.870+0700","msg":"email 'ngohoanggiang1906@gmail.com' này đã được user khác sử dụng - không thể thêm","service":"userService","func":"ImportUsersExcel"}
+{"level":"ERROR","timestamp":"2025-11-18T11:20:18.311+0700","msg":"email 'ngohoanggiang1906@gmail.com' này đã được user khác sử dụng - không thể thêm","service":"userService","func":"ImportUsersExcel"}
+{"level":"ERROR","timestamp":"2025-11-18T11:29:23.818+0700","msg":"email 'ngohoanggiang@gmail.com' này đã được user khác sử dụng - không thể thêm","service":"userService","func":"ImportUsersExcel"}
+{"level":"ERROR","timestamp":"2025-11-18T11:30:21.028+0700","msg":"email 'ngohoanggiang@gmail.com' này đã được user khác sử dụng - không thể thêm","service":"userService","func":"ImportUsersExcel"}
+{"level":"ERROR","timestamp":"2025-11-18T11:30:21.799+0700","msg":"email 'ngohoanggiang@gmail.com' này đã được user khác sử dụng - không thể thêm","service":"userService","func":"ImportUsersExcel"}

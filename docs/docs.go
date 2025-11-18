@@ -503,6 +503,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/export": {
+            "get": {
+                "description": "Lấy danh sách tất cả users từ database và trả về file Excel",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Xuất toàn bộ users ra file Excel",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/import": {
+            "post": {
+                "description": "Nhận file Excel, đọc danh sách users và thêm vào database",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Import users từ file Excel",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File Excel chứa danh sách users",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Import thành công",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/users/profile": {
             "get": {
                 "security": [

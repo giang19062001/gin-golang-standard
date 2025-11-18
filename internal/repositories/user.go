@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -21,6 +22,7 @@ func NewUserRepository(db *sql.DB) IUserRepository {
 type IUserRepository interface {
 	GetAllUser() ([]models.User, error)
 	Insert(*models.User) error
+	InsertMany([]models.User) error
 	UpdateAvatar(string, int) error
 	Get(int) (*models.User, error)
 	GetByEmail(string) (*models.User, error)
@@ -54,6 +56,45 @@ func (repo *userRepository) GetAllUser() ([]models.User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+// TODO: transaction
+func (repo *userRepository) InsertMany(users []models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Bắt đầu transaction
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("không thể bắt đầu transaction: %w", err)
+	}
+
+	query := "INSERT INTO users(email, password, name) VALUES (?, ?, ?)"
+
+	// lặp qua từng user để insert
+	for i := range users {
+		result, err := tx.ExecContext(ctx, query, users[i].Email, users[i].Password, users[i].Name)
+		if err != nil {
+			// rollback nếu có lỗi
+			tx.Rollback()
+			return fmt.Errorf("lỗi insert user %s: %w", users[i].Email, err)
+		}
+
+		id, err := result.LastInsertId()
+		if err != nil {
+			// rollback nếu có lỗi
+			tx.Rollback()
+			return fmt.Errorf("lỗi lấy id user %s: %w", users[i].Email, err)
+		}
+		users[i].Id = int(id)
+	}
+
+	// commit nếu tất cả thành công
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("lỗi commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func (repo *userRepository) Insert(user *models.User) error {

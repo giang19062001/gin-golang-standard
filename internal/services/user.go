@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"log"
 	"mime/multipart"
 
 	"github.com/giang19062001/gin-golang-standard/internal/dto"
@@ -10,6 +11,7 @@ import (
 	"github.com/giang19062001/gin-golang-standard/internal/repositories"
 	"github.com/giang19062001/gin-golang-standard/internal/utils"
 	"github.com/giang19062001/gin-golang-standard/pkg/logger"
+	"github.com/xuri/excelize/v2"
 )
 
 type userService struct {
@@ -24,6 +26,8 @@ type IUserService interface {
 	LoginUser(*dto.LoginInDto) (string, error)
 	GetUserOfEvent(int) ([]models.User, error)
 	UpdateAvatar(multipart.File, *multipart.FileHeader, int) (string, error)
+	ExportUsersExcel([]models.User) (*excelize.File, error)
+	ImportUsersExcel([][]string) error
 }
 
 func NewUserService(repo repositories.IUserRepository, jwtSecret string) IUserService {
@@ -88,6 +92,95 @@ func (ser *userService) RegisterUser(userDto *dto.RegisterDto) (*models.User, er
 
 	return &user, nil
 
+}
+func (ser *userService) ImportUsersExcel(rows [][]string) error {
+	logr := logger.With("userService")
+
+	// Parse dữ liệu thành slice User
+	var users []models.User
+	for i, row := range rows {
+		if i == 0 {
+			// bỏ qua header
+			continue
+		}
+		if len(row) < 3 {
+			continue
+		}
+		user := models.User{
+			Name:     row[0],
+			Email:    row[1],
+			Password: row[2],
+		}
+		users = append(users, user)
+	}
+
+	// Log ra danh sách users
+	for _, u := range users {
+		log.Printf("User: Name=%s, Email=%s, Password=%s", u.Name, u.Email, u.Password)
+		// kiểm tra nếu trong file import có bất kì email nào  trùng với email đã có trong database thì báo lỗi và dừng import
+		existingUser, _ := ser.repo.GetByEmail(u.Email)
+		if existingUser != nil {
+			// email đã tồn tại -> ném lỗi
+			errText := fmt.Sprintf("email '%s' này đã được user khác sử dụng - không thể thêm", u.Email)
+			logr.Error(errText)
+			return errors.New(errText)
+		}
+	}
+
+	// nếu tất cả email đều hợp lệ thì insert nhiều
+	usersHahed := []models.User{}
+	for _, u := range users {
+		// hash mật khẩu
+		hashedPassword, _ := utils.HashPassword(u.Password)
+		// gán cho struct hiện tại đề insert
+		u.Password = hashedPassword
+		userHash := models.User{
+			Email:    u.Email,
+			Name:     u.Name,
+			Password: u.Password,
+		}
+		usersHahed = append(usersHahed, userHash)
+	}
+	// thêm vào db
+	err := ser.repo.InsertMany(usersHahed)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (ser *userService) ExportUsersExcel(users []models.User) (*excelize.File, error) {
+	logr := logger.With("userService")
+
+	f := excelize.NewFile()
+	// tạo sheet mới
+	sheet := "Users"
+	f.NewSheet(sheet)
+
+	// Xóa sheet mặc định
+	f.DeleteSheet("Sheet1")
+
+	// Đặt sheet "Users" làm active
+	idx, err := f.GetSheetIndex(sheet)
+	if err != nil {
+		logr.Error("Có lỗi khi tạo file excel: " + err.Error())
+		return nil, err
+	}
+	f.SetActiveSheet(idx)
+
+	// gán header
+	f.SetCellValue(sheet, "A1", "ID")
+	f.SetCellValue(sheet, "B1", "Name")
+	f.SetCellValue(sheet, "C1", "Email")
+
+	// gán giá trị từng dòng
+	for i, u := range users {
+		row := i + 2
+		f.SetCellValue(sheet, fmt.Sprintf("A%d", row), u.Id)
+		f.SetCellValue(sheet, fmt.Sprintf("B%d", row), u.Name)
+		f.SetCellValue(sheet, fmt.Sprintf("C%d", row), u.Email)
+	}
+	logr.Info("Tạo file excel thành công")
+	return f, nil
 }
 
 func (ser *userService) GetAllUser() ([]models.User, error) {

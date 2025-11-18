@@ -26,8 +26,6 @@ func Init() {
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		panic(err)
 	}
-
-	// Tạo filename theo ngày
 	date := time.Now().Format("2006-01-02")
 	infoPath := filepath.Join(logDir, "info-"+date+".log")
 	errorPath := filepath.Join(logDir, "error-"+date+".log")
@@ -35,20 +33,32 @@ func Init() {
 	infoWriter := getWriter(infoPath)
 	errorWriter := getWriter(errorPath)
 
-	// chuẩn cấu hình
+	// cấu hình encoder cho file (JSON)
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.TimeKey = "timestamp"
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
-	encoder := zapcore.NewJSONEncoder(encoderConfig)
+	fileEncoder := zapcore.NewJSONEncoder(encoderConfig)
 
-	infoCore := zapcore.NewCore(encoder, zapcore.AddSync(infoWriter), zapcore.InfoLevel)
-	errorCore := zapcore.NewCore(encoder, zapcore.AddSync(errorWriter), zapcore.ErrorLevel)
+	// cấu hình encoder cho console
+	consoleEncoderConfig := zap.NewDevelopmentEncoderConfig()
+	consoleEncoderConfig.TimeKey = "timestamp"
+	consoleEncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	consoleEncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	consoleEncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	consoleEncoder := zapcore.NewConsoleEncoder(consoleEncoderConfig)
 
-	// Tee kết hợp 2 core
-	logger = zap.New(zapcore.NewTee(infoCore, errorCore))
-	// logger = zap.New(zapcore.NewTee(infoCore, errorCore),
+	// core cho file
+	infoCore := zapcore.NewCore(fileEncoder, zapcore.AddSync(infoWriter), zapcore.InfoLevel)
+	errorCore := zapcore.NewCore(fileEncoder, zapcore.AddSync(errorWriter), zapcore.ErrorLevel)
+
+	// core cho console (ghi tất cả từ Info trở lên ra màn hình)
+	consoleCore := zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel)
+
+	// kết hợp tất cả core
+	logger = zap.New(zapcore.NewTee(infoCore, errorCore, consoleCore))
+	// logger = zap.New(zapcore.NewTee(infoCore, errorCore, consoleCore),
 	// 	zap.AddCaller(), // thêm thông tin caller - người gọi thông thường caller
 	// )
 

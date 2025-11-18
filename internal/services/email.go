@@ -25,7 +25,7 @@ func (ser *EmailService) SendEmailHandler(email, name string) error {
 
 	msg := models.EmailMessage{
 		To:      email,
-		Subject: fmt.Sprintf("Xin chào *%s*", name),
+		Subject: fmt.Sprintf("Hello *%s*", name),
 		Body:    "Đơn đăng ký sự kiện của bạn đã thành công.",
 	}
 

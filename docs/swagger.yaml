@@ -477,6 +477,40 @@ paths:
       summary: Upload avatar **FILE**
       tags:
       - Users
+  /users/export:
+    get:
+      description: Lấy danh sách tất cả users từ database và trả về file Excel
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      summary: Xuất toàn bộ users ra file Excel
+      tags:
+      - Users
+  /users/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Nhận file Excel, đọc danh sách users và thêm vào database
+      parameters:
+      - description: File Excel chứa danh sách users
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Import thành công
+          schema:
+            type: string
+      summary: Import users từ file Excel
+      tags:
+      - Users
   /users/profile:
     get:
       consumes:

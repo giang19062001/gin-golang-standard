@@ -53,6 +53,9 @@ func SetupRouter(g *gin.Engine, cfg *config.Config, db *sql.DB, mq *rabbitmq.MqS
 
 			// USER
 			public.GET("/users", userController.GetAllUser)
+			public.GET("/users/export", userController.ExportUsersExcel)
+			public.POST("/users/import", userController.ImportUsersExcel)
+			public.PUT("/users/avatar", userController.UpdateAvatar)
 
 			// EVENT
 			public.GET("/events", eventController.GetAllEvents)
@@ -67,9 +70,6 @@ func SetupRouter(g *gin.Engine, cfg *config.Config, db *sql.DB, mq *rabbitmq.MqS
 			public.DELETE("/attendees/:eventId/:userId", attendeeController.DeleteAttendee)
 			public.GET("/attendees/events/:userId", attendeeController.GetEventsByUser)
 			public.GET("/attendees/users/:eventId", attendeeController.GetUsersByEvent)
-
-			// USER
-			public.PUT("/users/avatar", userController.UpdateAvatar)
 
 		}
 
